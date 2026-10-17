@@ -90,42 +90,62 @@ def extract_country(location: pd.Series) -> pd.Series:
 #   title_len/words    – very short or keyword-stuffed titles stand out
 # ---------------------------------------------------------------------------
 def engineer(df: pd.DataFrame) -> pd.DataFrame:
+    """Fill empties: cats → 'Missing', binaries → 0, title/location → ''."""
     out = df.copy()
-    out["title"] = out["title"].fillna("").astype(str)
-    out["location"] = out.get("location", pd.Series([""] * len(out))).fillna("").astype(str)
+    raw = df  # keep original NaNs for missing_count
+
+    out["title"] = out["title"].fillna("").astype(str).replace({"nan": "", "None": ""}) if "title" in out.columns else ""
+    if "title" not in out.columns:
+        out["title"] = ""
+    out["title"] = out["title"].fillna("").astype(str).replace({"nan": "", "None": ""})
+
+    if "location" not in out.columns:
+        out["location"] = ""
+    out["location"] = out["location"].fillna("").astype(str).replace({"nan": "", "None": ""})
 
     for c in ["department", "industry", "employment type", "required experience", "required education"]:
         if c not in out.columns:
-            out[c] = np.nan
-        out[c] = out[c].astype(str).replace({"nan": np.nan, "None": np.nan})
+            out[c] = "Missing"
+        out[c] = (
+            out[c]
+            .astype(object)
+            .where(out[c].notna(), "Missing")
+            .astype(str)
+            .str.strip()
+            .replace({"": "Missing", "nan": "Missing", "None": "Missing", "NaN": "Missing"})
+        )
 
     for c in BINARY_COLS:
         if c not in out.columns:
             out[c] = 0
-        out[c] = coerce_binary(out[c])
+        out[c] = coerce_binary(out[c].fillna(0))
 
-    salary = out.get("salary range", pd.Series([np.nan] * len(out)))
+    if "salary range" not in out.columns:
+        out["salary range"] = np.nan
+    salary = out["salary range"]
     out["has_salary"] = (
-        ~salary.isna()
+        salary.notna()
         & (salary.astype(str).str.strip() != "")
-        & (salary.astype(str).str.lower() != "nan")
+        & (~salary.astype(str).str.lower().isin(["nan", "none", "null"]))
     ).astype(int).astype(str)
 
     out["country"] = extract_country(out["location"])
-    out["title_len"] = out["title"].str.len()
-    out["title_words"] = out["title"].str.split().str.len().fillna(0)
+    out["title_len"] = out["title"].str.len().fillna(0).astype(int)
+    out["title_words"] = out["title"].str.split().str.len().fillna(0).astype(int)
 
     miss_cols = [
         "department", "industry", "employment type",
         "required experience", "required education", "salary range",
     ]
-    present = [c for c in miss_cols if c in out.columns]
-    out["missing_count"] = out[present].isna().sum(axis=1) + out[present].astype(str).isin(
-        ["", "nan", "None"]
-    ).sum(axis=1)
+    present = [c for c in miss_cols if c in raw.columns]
+    raw_miss = raw.reindex(columns=present)
+    out["missing_count"] = (
+        raw_miss.isna().sum(axis=1)
+        + raw_miss.astype(str).isin(["", "nan", "None", "NaN"]).sum(axis=1)
+    ).astype(int)
 
     for c in CAT_COLS:
-        out[c] = out[c].fillna("Missing").astype(str)
+        out[c] = out[c].fillna("Missing").astype(str).replace({"nan": "Missing", "": "Missing"})
     return out
 
 
