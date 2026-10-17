@@ -1,0 +1,21 @@
+feature,importance,how_it_affects_decision
+bin__company logo,0.09562991402711826,Logo missing raises fake odds; logo present supports authentic.
+cat__country_US,0.029975215075795196,Category level 'country_US' shifts class odds.
+cat__industry_Oil & Energy,0.028263847512454136,Category level 'industry_Oil & Energy' shifts class odds.
+bin__screening round,0.016651227564455428,Screening questions present → more authentic; absent → riskier.
+cat__required education_Bachelor's Degree,0.016190261248343784,Category level 'required education_Bachelor's Degree' shifts class odds.
+cat__country_GB,0.014008356630965838,Category level 'country_GB' shifts class odds.
+num__missing_count,0.013708478958327655,More empty fields → more likely fake.
+cat__has_salary_1,0.011800446327905589,Salary listed vs blank shifts authenticity probability.
+cat__department_Missing,0.011718495872396928,Category level 'department_Missing' shifts class odds.
+cat__has_salary_0,0.010613281985100302,Salary listed vs blank shifts authenticity probability.
+cat__industry_Computer Software,0.010263654626340556,Category level 'industry_Computer Software' shifts class odds.
+cat__required experience_Associate,0.010004814724299451,Category level 'required experience_Associate' shifts class odds.
+num__title_len,0.009996812583409115,Numeric/text signal used by trees to split authentic vs fake.
+num__title_words,0.009421372265271545,Numeric/text signal used by trees to split authentic vs fake.
+cat__required experience_Mid-Senior level,0.008648631134227607,Category level 'required experience_Mid-Senior level' shifts class odds.
+cat__required education_High School or equivalent,0.008637346410043765,Category level 'required education_High School or equivalent' shifts class odds.
+cat__industry_Internet,0.008400270516806575,Category level 'industry_Internet' shifts class odds.
+cat__employment type_Full-time,0.008248401745572466,Category level 'employment type_Full-time' shifts class odds.
+cat__country_GR,0.007940584398736685,Category level 'country_GR' shifts class odds.
+cat__required experience_Missing,0.007924588402623977,Category level 'required experience_Missing' shifts class odds.

@@ -1,3 +1,2 @@
-0.984116
-model=soft_vote_ensemble
-threshold=0.75
+0.982774
+model=extratrees

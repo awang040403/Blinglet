@@ -1,0 +1,21 @@
+feature,importance
+bin__company logo,0.09562991402711826
+cat__country_US,0.029975215075795196
+cat__industry_Oil & Energy,0.028263847512454136
+bin__screening round,0.016651227564455428
+cat__required education_Bachelor's Degree,0.016190261248343784
+cat__country_GB,0.014008356630965838
+num__missing_count,0.013708478958327655
+cat__has_salary_1,0.011800446327905589
+cat__department_Missing,0.011718495872396928
+cat__has_salary_0,0.010613281985100302
+cat__industry_Computer Software,0.010263654626340556
+cat__required experience_Associate,0.010004814724299451
+num__title_len,0.009996812583409115
+num__title_words,0.009421372265271545
+cat__required experience_Mid-Senior level,0.008648631134227607
+cat__required education_High School or equivalent,0.008637346410043765
+cat__industry_Internet,0.008400270516806575
+cat__employment type_Full-time,0.008248401745572466
+cat__country_GR,0.007940584398736685
+cat__required experience_Missing,0.007924588402623977
