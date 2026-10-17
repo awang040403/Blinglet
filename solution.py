@@ -55,35 +55,17 @@ NUM_COLS = ["title_len", "title_words", "missing_count"]
 #      (e.g. wfh as "0"/"1" strings vs ints). Wrong types break models.
 # ---------------------------------------------------------------------------
 def coerce_binary(series: pd.Series) -> pd.Series:
-    """Safe 0/1 coercion for int/float/str/bool (Expedia train/test dtype mismatch)."""
-    if series is None:
-        return pd.Series(dtype=int)
-    s = series.copy()
-    # Already numeric 0/1
-    if pd.api.types.is_bool_dtype(s):
-        return s.astype(int)
-    if pd.api.types.is_numeric_dtype(s):
-        return s.fillna(0).astype(float).ne(0).astype(int)
-
-    # String / object / mixed
-    cleaned = (
-        s.astype(str)
-        .str.strip()
-        .str.lower()
-        .replace({"nan": "0", "none": "0", "null": "0", "": "0"})
-    )
     mapping = {
-        "1": 1, "1.0": 1, "true": 1, "yes": 1, "y": 1, "t": 1,
-        "0": 0, "0.0": 0, "false": 0, "no": 0, "n": 0, "f": 0,
+        "1": 1, "1.0": 1, "true": 1, "yes": 1, "y": 1,
+        "0": 0, "0.0": 0, "false": 0, "no": 0, "n": 0,
+        "": 0, "nan": 0, "none": 0,
     }
-    mapped = cleaned.map(mapping)
-    # Any leftover tokens → try numeric parse, else 0
-    need = mapped.isna()
-    if need.any():
-        parsed = pd.to_numeric(cleaned[need], errors="coerce").fillna(0)
-        mapped = mapped.copy()
-        mapped.loc[need] = (parsed != 0).astype(int).values
-    return mapped.fillna(0).astype(int)
+    out = series.astype(str).str.strip().str.lower().map(mapping)
+    leftover = out.isna()
+    if leftover.any():
+        numeric = pd.to_numeric(series[leftover], errors="coerce").fillna(0)
+        out.loc[leftover] = (numeric > 0).astype(int)
+    return out.astype(int)
 
 
 def extract_country(location: pd.Series) -> pd.Series:
@@ -107,32 +89,8 @@ def extract_country(location: pd.Series) -> pd.Series:
 #   missing_count      – emptier forms correlate with fraud
 #   title_len/words    – very short or keyword-stuffed titles stand out
 # ---------------------------------------------------------------------------
-def _normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """Map common aliases (underscores / different names) to Expedia schema."""
-    aliases = {
-        "job_id": "id",
-        "salary_range": "salary range",
-        "telecommuting": "wfh",
-        "has_company_logo": "company logo",
-        "company_logo": "company logo",
-        "has_questions": "screening round",
-        "screening_round": "screening round",
-        "employment_type": "employment type",
-        "required_experience": "required experience",
-        "required_education": "required education",
-        "is_authentic": "is-authentic",
-    }
-    out = df.copy()
-    out.columns = [c.strip() if isinstance(c, str) else c for c in out.columns]
-    out = out.rename(columns={k: v for k, v in aliases.items() if k in out.columns})
-    return out
-
-
 def engineer(df: pd.DataFrame) -> pd.DataFrame:
-    out = _normalize_columns(df)
-    out["title"] = out["title"].fillna("").astype(str) if "title" in out.columns else ""
-    if "title" not in out.columns:
-        out["title"] = ""
+    out = df.copy()
     out["title"] = out["title"].fillna("").astype(str)
     out["location"] = out.get("location", pd.Series([""] * len(out))).fillna("").astype(str)
 
