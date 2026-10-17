@@ -241,21 +241,16 @@ def get_feature_names(pre: ColumnTransformer) -> np.ndarray:
 # Higher tree impurity reduction → higher feature importance.
 # ---------------------------------------------------------------------------
 def build_model() -> Pipeline:
-    return Pipeline(
-        [
-            ("pre", build_preprocessor()),
-            (
-                "clf",
-                ExtraTreesClassifier(
-                    n_estimators=500,
-                    min_samples_leaf=1,
-                    class_weight="balanced_subsample",
-                    random_state=42,
-                    n_jobs=-1,
-                ),
-            ),
-        ]
+    # n_jobs belongs on ExtraTreesClassifier / cross_val_score — NOT on Pipeline(...)
+    # Wrong: Pipeline([...], n_jobs=-1) → TypeError: unexpected keyword argument 'n_jobs'
+    clf = ExtraTreesClassifier(
+        n_estimators=500,
+        min_samples_leaf=1,
+        class_weight="balanced_subsample",
+        random_state=42,
+        n_jobs=-1,
     )
+    return Pipeline([("pre", build_preprocessor()), ("clf", clf)])
 
 
 # ---------------------------------------------------------------------------
